@@ -33,7 +33,7 @@ MODULEENTRY32 GetModule(DWORD pID, const char* moduleName)
 	return me;
 }
 
-void hook() {
+__declspec(naked) int hook() {
 	NOP
 	NOP
 	NOP
@@ -45,6 +45,10 @@ void hook() {
 	NOP
 	NOP
 	std::cout << "\n\nWORKS!!!";
+	__asm mov eax,1
+	__asm mov esp,ebp
+	__asm pop ebp
+	__asm ret
 }
 
 
@@ -85,10 +89,8 @@ int main() {
 		jmp[i + 1] = offset_to_addr.bytes[i];
 	}
 	DWORD oldprotect;
-	//VirtualProtectEx(hProc, mod.modBaseAddr + offset, 32, PAGE_EXECUTE_READWRITE, &oldprotect);
 	WriteProcessMemory(hProc, mod.modBaseAddr + offset, jmp, 5, &dwBytesRead);
-	//VirtualProtectEx(hProc, mod.modBaseAddr + offset, 32, oldprotect, &oldprotect);
-	add(2, 3);
+	std::cout <<add(2, 3);
 
 
 	std::cin.get();
