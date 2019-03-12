@@ -61,7 +61,7 @@ int add(int a, int b) {
 	return a+b;
 }
 
-template<typename T>
+template<typename T=BYTE>
 unsigned long get_offset(std::vector<T> buff, std::vector<T> pattern) {
 	return std::search(buff.begin(), buff.end(), pattern.begin(), pattern.end()) - buff.begin();
 }
@@ -91,8 +91,12 @@ int main() {
 	DWORD oldprotect;
 	WriteProcessMemory(hProc, mod.modBaseAddr + offset, jmp, 5, &dwBytesRead);
 	std::cout <<add(2, 3);
-
-
+	std::string dllpath = "dll.dll";
+	auto p = VirtualAlloc(NULL, dllpath.size(), MEM_COMMIT | MEM_RESERVE, PAGE_EXECUTE_READWRITE);
+	WriteProcessMemory(hProc, p, dllpath.c_str(), dllpath.size(), &dwBytesRead);
+	LPVOID loadlibrary = (LPVOID)GetProcAddress(GetModuleHandle("kernel32.dll"), "LoadLibraryA");
+	HANDLE remoteThread = CreateRemoteThread(hProc, NULL, 0, (LPTHREAD_START_ROUTINE)loadlibrary, p, 0, NULL);
+	std::cout << "\n\n" << (DWORD)p;
 	std::cin.get();
 
 	return 0;
