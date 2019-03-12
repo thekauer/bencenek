@@ -71,7 +71,7 @@ int main() {
 	std::vector<BYTE> buff(mod.modBaseSize);
 	ReadProcessMemory(hProc, mod.modBaseAddr, &buff[0], buff.size(), &dwBytesRead);
 
-	//std::cout << (int)mod.modBaseAddr << "::" << mod.modBaseSize;
+
 	auto offset =get_offset<BYTE>(buff, { 0x90, 0x90, 0x90, 0x90, 0x90 });
 	auto hook_offset = get_offset<BYTE>(buff, { 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90 });
 	BYTE jmp[5];
@@ -85,10 +85,11 @@ int main() {
 		jmp[i + 1] = offset_to_addr.bytes[i];
 	}
 	DWORD oldprotect;
-	VirtualProtectEx(hProc, mod.modBaseAddr + offset, 32, PAGE_EXECUTE_READWRITE, &oldprotect);
+	//VirtualProtectEx(hProc, mod.modBaseAddr + offset, 32, PAGE_EXECUTE_READWRITE, &oldprotect);
 	WriteProcessMemory(hProc, mod.modBaseAddr + offset, jmp, 5, &dwBytesRead);
-	VirtualProtectEx(hProc, mod.modBaseAddr + offset, 32, oldprotect, &oldprotect);
+	//VirtualProtectEx(hProc, mod.modBaseAddr + offset, 32, oldprotect, &oldprotect);
 	add(2, 3);
+
 
 	std::cin.get();
 
