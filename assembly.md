@@ -17,7 +17,7 @@ a,b,c,d,source,destination,stack pointer,base pointer.
 Ezeknek a mérete 32 vagy 64 bit attól függően hogy hány bites a processzorod.
 
 Nem mindig van szükségünk egy egész registerre ezért mindeggyik register részekre van bontva. Például most vegyük az A registert.
-![rax](/images/rax.png)
+![rax](rax.png)
 
 És akkor mégegyszer a registerek ahogy általában látod őket, plusz hogy mit csinálnak. (amihez nem irok semmit azt gyakorlatilag arra használod mindig amire épp kell)
 
