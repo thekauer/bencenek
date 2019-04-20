@@ -22,15 +22,23 @@ Nem mindig van szükségünk egy egész registerre ezért mindeggyik register r�
 És akkor mégegyszer a registerek ahogy általában látod őket, plusz hogy mit csinálnak. (amihez nem irok semmit azt gyakorlatilag arra használod mindig amire épp kell)
 
 EAX - Ebben a registerben van a **return** értéke a meghivott funkciónak. 
-EBX 
+
+EBX
+
 ECX
+
 EDX
-ESI - Source pointer      
+
+ESI - Source pointer
+
 EDI - Destination pointer,  az  esivel eggyüt szokás használni pédául két memória swapolására , ezekbe is szeretnek passolni argumentumokat a funkciók
+
 ESP - Stack pointer, Megmutatja hogy épp hol vagyunk a stacken de át lehet irni
+
 EBP - **Mindig** az adott funkcio kezdő cime van benen , gyakorlatilag nem is lenne erre szükség de egyszerűsiti a debuggolást
 
 ezen felül szokott lenni még
+
 R7-től egészen R15-ig 8db extra register arra hsaználod őket amire szeretnéd. Többet nem esik róluk szó ,nem olyan fontosak.
 
 ## FLAGS
@@ -135,6 +143,7 @@ lea ecx,eax   ;int*c=&a;
 
 # Arhimetika és Logika
 **ADD,SUB,MUL,IMUL,DIV,IDIV,AND,OR,XOR**
+
 (az i betű az idiv ben és imul ban az integert jelenti és egyben arra utal hogy ezek lehetnek minuszosak azaz signed számokról van szó, mig a sima mul és div unsigned.)
 Gyakorlatialg ugyan úgy müködik mint a mov.
 Ez talán a legegyszerűbb az egészből, úgyhogy csak pár pédát irok.
@@ -158,7 +167,174 @@ Egyetlen egy dolog jöhet jól, mégpedig hogy ugye nullával nem lehet osztani.
 idiv 0      ;error
 ```
 
-# Jumpok
+# CMP, JMP, Labelek
+
+## Uncoditional Jump
+
+csak úgy ugrok egy helyre a memóriában.
+
+```S
+Func:               ;int Func() {return 1;}
+push ebp
+mov ebp,esb
+mov eax,1
+mov esp,ebp
+pop ebp
+ret
+
+
+...
+
+JMP Func        ;ugrás a funkciómra
+```
+
+Na ebben sok ujdonság volt de ami inne fontos egyrész a labelek.
+Akármennyi lehetó,bárhol csak különbözzön a neve, a loopoknál és funkcióknál használatos.
+Arra használjuk hogy oda tudjunk ugrani a kód bizonyos részeire
+
+```S
+;cim          utasitas
+              L1:
+FF000001      mov eax,1
+              L2:
+FF000002      mov ebx,3
+              L3:
+FF000003      add eax,ebx
+```
+
+Ami igazából érdekes az az hogy ez hogy működik amikor átirjuk az egészet byte okra.
+A labeleknek nincs cime valójában az utánnuk következő utasitás cimét jelentik tehát:
+L1 = FF000001
+L2 = FF000002
+L3 = FF000003
+
+A labelek azért vannak hogy megspóroljanak nekünk pár számitást.
+
+A legfontosabb közülök hogy a jmp utasitás **relativ** cimre ugrik azaz
+
+Ha az 1000. cimen lévű jump utasitás a 10000. cimre ugrik
+
+**nem** 
+E9 10000 
+a helyes kód 
+hanem 
+E9 9000       //avagy 10000-1000 ahol ugye vagyok
+
+
+## Conditional Jump
+
+A **CMP** utasitás gyakorlatilag kivonja az első registerből a másidok registert/számot és **NEM** tárolja az eredményt azaz a registerek értékei **nem** változnak 
+
+```S
+mov eax,3
+mov ebx,2
+cmp eax,ebx
+; EAX:3   EBX:2
+```
+viszont beálitja a kivonásnak megfelelő flageket, és ezzekhez a flagekhez tartozó ugrásokkal tudunk gyakorlatilag **if** statementeket csinálni
+
+
+```S
+mov eax,10
+mov ebx,10
+cmp eax,ebx
+je  EGYENLŐEK     ;akkor ugrik ha egyenlő volt a két szám
+```
+a következő conditional jump instrukciók vannak
+
+JE/JZ       EGYENLŐEK         ==          JUMP EQUAL/ZERO
+JNZ/JNE     NEM EGYENLŐEK     !=          JUMP NOT ZERO/NET EQUAL
+JG/JNLE     NAGYOBB           >           JUMP GREATER/NOT LESS EQUAL
+JGE/JNL     NAGYOBB EGYENLŐ   >=          JUMP GREATER-EQUAL/NOT LESS
+JL/JNGE     KISSEBB           <           JUMP LESS/NOT GREATER EQUAL
+JLE/JNG     KISSEBB EGYENLŐ   <=          JUMP LESS-EQUAL/NOT GREATER
+
+# PUSH,POP ,PUSHA,POPA , a STACK,ESP
+(Plusz cpp implementáció hátha igy könnyebb megérteni)
+A stackről gyorsan.
+Előre meglévő méretű,gyors.
+Gyakorlatilag megfeleltethető egy arraynak cpp ban.
+```cpp
+int stack[255];
+```
+Három fontos müveletet lehet vele csinálni: **PUSH,POP,PEEK**
+(de a peekel nem foglalkozunk most)
+A stackhez tartozik egy stack pointer ami mindig a tetejére mutat.
+```cpp
+int* ESP = stack;
+```
+
+### PUSH
+A push felrak a stack TETEJÉRE egy értéket
+```cpp
+void push(int val) {
+  *ESP=val;     //a stack tetejére rakom az értéket - a stack tetejére mutat a ESP register
+  ESP++;        // a PUSH után egyel arráb kerül a stack teteje hiszen eggyel magasabb lett
+  
+  //ha zavaros lenne az ESP ugye INT * tipusu az int 4 byte-os ezért amikor azt irom hogy ESP++ a '++' igazából nem eggyet hanem NÉGYET ad az ESP értékéhez
+ }
+ ```
+ Itt már látszik hogy mitől gyors a stack.
+ - Nem kell keresnem a memóriában valami távoli cimet rögtön rámutat a tetejére az ESP
+ - Muitán felrakok egy elemet nincs realloc mivel ez igazából csak egy nagy array egyedül az ESPhez kell hozzáadjak
+ 
+ Assemblyben:
+ ```S
+ ;EIP:0
+ Push 3       ;felrakok 3mat a stackre ,    Az eip most 0 volt de felkerül egy szám ami 4 byte-os szoval az EIP:4
+ mov eax,1
+ Push eax     ;felrakom eax tartalmát - eggyet a stackre ,ez megint csak 4 byte az EIP:8
+ ;most a stackem igy nézz ki:
+ ;1
+ ;3
+```
+
+
+### POP
+
+Leveszem a stack lefelső elemét, csak registerbe!
+```cpp
+int pop() {
+  int ret = *ESP;
+  ESP--;
+  return ret;
+}
+```
+Itt újból látszik hogy mitől gyors a stack.
+Valójában nem törlöm a stackről az elemet amit leveszek. Csak úgy teszek mintha nem lenne ott azzal hogy csökkentem az ESP-t.
+Ezáltal a legközelebbi push úgy is át fogja irni az értéket.
+
+
+Assemblyben:
+```S
+push 1
+push 2
+push 3
+pop eax       ;EAX: 3
+pop ebx       ;EBX  2
+pop ecx       ;ECX  1
+```
+
+
+
+
+
+
+
+ 
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
