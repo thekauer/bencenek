@@ -384,6 +384,7 @@ mainel kezüdik a program itt a stack üres
 stack:
 
 ESP:    00000000
+
 EBP:    00000000      (main)
 
 
@@ -395,9 +396,13 @@ push 2
 stack:
 
 00000004      2
+
 00000000      3
 
+
+
 ESP:    000000004         //mindig a stack tetejére mutat
+
 EBP:    000000000         //az adott funkció cimére mutat a main a 0. cimen van szoval ez is nulla
 
 ```S
@@ -407,9 +412,14 @@ call add ;ez simplán csak oda ugrik az add funkcióra ,lényegében jmp is lehe
 stack:
 
 00000004      2
+
 00000000      3
 
+
+
+
 ESP:    000000004
+
 EBP:    000000000     (main)
 
 ```S
@@ -420,10 +430,16 @@ push ebp    ;felrakom a stackre a jelenlegi funkció (main) kezdő cimét
 stack:
 
 0000008       00000000    (main)
+
 0000004       3
+
 0000000       2
 
+
+
+
 ESP:    00000008
+
 EBP:    00000000      (main)
 
 
@@ -437,11 +453,15 @@ mov ebp,esp     ;beleteszem az stack pointert a base pointerbe,       a stack po
 stack:
 
 0000008       00000000      (main)
+
 0000004       3
+
 0000000       2
 
 
+
 ESP:    00000008
+
 EBP:    DEADBEEF      (add)
 
 
@@ -455,11 +475,16 @@ sub esp,8       ;kivonom az argumentumok méretét a stackpointerből
 stack:
 
 0000008       00000000      (main)
+
 0000004       3
+
 0000000       2
 
 
+
+
 ESP:    00000000
+
 EBP:    DEADBEEF      (add)
 
 
@@ -470,11 +495,15 @@ mov eax,[esp]         ;tehát most látszik hogy 2 raktam eaxba,ami az első arg
 stack:
 
 0000008       00000000      (main)
+
 0000004       3
+
 0000000       2
 
 
+
 ESP:    00000000
+
 EBP:    DEADBEEF      (add)
 
 
@@ -485,11 +514,15 @@ add eax,[esp+4]     ; ez pedig 3 azaz a második argumentum
 stack:
 
 0000008       00000000      (main)
+
 0000004       3
+
 0000000       2
 
 
+
 ESP:    00000000
+
 EBP:    DEADBEEF      (add)
 
 
@@ -500,11 +533,15 @@ mov esp,ebp
 stack:
 
 0000008       00000000      (main)
+
 0000004       3
+
 0000000       2
 
 
+
 ESP:    DEADBEEF      (add)
+
 EBP:    DEADBEEF      (add)
 
 
@@ -515,11 +552,16 @@ pop ebp       ;leveszem a stack tetejéről a 00000000 (maint) és belerakom EBP
 stack:
 
 0000008       00000000      (main)
+
 0000004       3
+
 0000000       2
 
 
+
+
 ESP:    DEADBEEF
+
 EBP:    00000000      (main)
 
  
