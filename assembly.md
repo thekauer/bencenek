@@ -11,8 +11,8 @@ Amit mi fogunk tanul az az Intel x86 és Intel x64
 És ha nem felejtem el majd azért megemlitem az amd és arm eseket is. Szerencsekre az inteles a legatlathatobb.
 
 Igyekszem most csak a szükséges dolgokat leírni.
-#Registerek
-##General Purpose
+# Registerek
+## General Purpose
 a,b,c,d,source,destination,stack pointer,base pointer.
 Ezeknek a mérete 32 vagy 64 bit attól függően hogy hány bites a processzorod.
 
@@ -33,7 +33,7 @@ EBP - **Mindig** az adott funkcio kezdő cime van benen , gyakorlatilag nem is l
 ezen felül szokott lenni még
 R7-től egészen R15-ig 8db extra register arra hsaználod őket amire szeretnéd. Többet nem esik róluk szó ,nem olyan fontosak.
 
-##FLAGS
+## FLAGS
 
 EFLAGS 32 biten
 
@@ -43,9 +43,9 @@ Nem olyan fontos ezeket se tudni majd ha eljutunk a CMP ig akkor lesz néha érd
 De csak a példa kedvéért
 
 ```S
-mov eax,1
-sub eax,1
-jz 
+mov eax,1    ; eax ba rakunk 1 et
+sub eax,1    ; kivonunk eax értékéből eggyet
+jz UGRO_CIM  ;jump zero instrukcio akkor ugrik ha a zero flag be van nyomva
 
 ```
 
