@@ -318,11 +318,222 @@ pop ecx       ;ECX  1
 
 
 
+# Funkciók , EBP, CALL ,RET Calling Convetionök, Változók
+általában a funkciók mindig a function prologue kezdődnek és epilogue végződnek.
+Prologue:
+```S
+push ebp
+mov ebp,esp
+sub esp, N      ;N az az argumentumok méretének összege
+```
+
+Epilogue:
+```S
+mov esp,ebp
+pop ebp
+ret
+```
+
+de ez miért fontos
+
+Ehez meg kell érteni a funkciók müködését.
+Vegyünk például egy c nyelven irt funkciót.
+
+A c nyelven irt funkciók alapvetően a cdecl calling convention használják.
+Ami azt jelenti hogy az argumentumokat jobbról balra rakjuk fel a stackre és EAXba kerül a return érték.
+
+```c
+int add(int a,int b) {
+  return a+b;
+}
 
 
+int main() {
+add(2,3);
+
+}
+```
+
+
+```S
+Add:
+push ebp
+mov ebp,esp
+sub esp,8       ;2 db int ami összesen 8 byte
+
+mov eax,[esp] ; eax-ba rakom a-t
+add eax,[esp+4] ; eax-hoz(a-hez) adom b-t
+
+mov esp,ebp
+pop ebp
+ret
+
+...
+
+;main
+push 3      ;argumentumok jobbról-ballra
+push 2
+call add
+```
+
+
+hogy megértsük mi is történt végig nézzük hogy hogy változik a stack
+
+mainel kezüdik a program itt a stack üres
+
+stack:
+
+ESP:    00000000
+EBP:    00000000      (main)
+
+
+
+```S
+push 3
+push 2
+```
+stack:
+
+00000004      2
+00000000      3
+
+ESP:    000000004         //mindig a stack tetejére mutat
+EBP:    000000000         //az adott funkció cimére mutat a main a 0. cimen van szoval ez is nulla
+
+```S
+call add ;ez simplán csak oda ugrik az add funkcióra ,lényegében jmp is lehetne
+```
+
+stack:
+
+00000004      2
+00000000      3
+
+ESP:    000000004
+EBP:    000000000     (main)
+
+```S
+;átugrottunk a funkciomra és ő az első utasitas
+push ebp    ;felrakom a stackre a jelenlegi funkció (main) kezdő cimét
+```
+
+stack:
+
+0000008       00000000    (main)
+0000004       3
+0000000       2
+
+ESP:    00000008
+EBP:    00000000      (main)
+
+
+
+Az ebp mindig az aktuáális funkcióra mutat
+```S
+mov ebp,esp     ;beleteszem az stack pointert a base pointerbe,       a stack pointer most a jelenlegi funkcióra mutat(add) ami a DEADBEEF helyen van a memóriában mivel elmentettem már a HIVÓ (main) funkciót a stackre ,nyugodtan átirhatom a jelenlegi funkciót ESP az addra
+```
+
+
+stack:
+
+0000008       00000000      (main)
+0000004       3
+0000000       2
+
+
+ESP:    00000008
+EBP:    DEADBEEF      (add)
+
+
+
+
+```S
+sub esp,8       ;kivonom az argumentumok méretét a stackpointerből
+```
+
+
+stack:
+
+0000008       00000000      (main)
+0000004       3
+0000000       2
+
+
+ESP:    00000000
+EBP:    DEADBEEF      (add)
+
+
+```S
+mov eax,[esp]         ;tehát most látszik hogy 2 raktam eaxba,ami az első argumentum 
+```
+
+stack:
+
+0000008       00000000      (main)
+0000004       3
+0000000       2
+
+
+ESP:    00000000
+EBP:    DEADBEEF      (add)
+
+
+```S
+add eax,[esp+4]     ; ez pedig 3 azaz a második argumentum
+```
+
+stack:
+
+0000008       00000000      (main)
+0000004       3
+0000000       2
+
+
+ESP:    00000000
+EBP:    DEADBEEF      (add)
+
+
+```S
+mov esp,ebp
+```
+
+stack:
+
+0000008       00000000      (main)
+0000004       3
+0000000       2
+
+
+ESP:    DEADBEEF      (add)
+EBP:    DEADBEEF      (add)
+
+
+```S
+pop ebp       ;leveszem a stack tetejéről a 00000000 (maint) és belerakom EBP-be
+```
+
+stack:
+
+0000008       00000000      (main)
+0000004       3
+0000000       2
+
+
+ESP:    DEADBEEF
+EBP:    00000000      (main)
 
  
 
+```S
+ret       ;vissza ugrok EBPre azaz a mainbe
+```
+
+
+
+Igen sikerült faszán belekavarodnom. hülyeség volt a mainnek 00000000 lennie , azt hittem igy egyszerűbb lesz a számolás de remélem  a lényeget azért érted.
+
+
+Egyébként annyi hogy a legeslegelején esp nem 00000000-ra mutat hanem már van sok minden a stacken.
 
 
 
